@@ -1,0 +1,48 @@
+--SQL Statement Cached Time:
+--gives which statement of which procedure is taking what amount of time to execute
+https://www.brentozar.com/archive/2016/02/stored-procedure-cached-time-vs-sql-statement-cached-time/
+
+SELECT *
+FROM 
+(
+  SELECT
+     total_worker_time/execution_count AS [Avg CPU Time]
+    ,creation_time AS cached_time
+    ,SUBSTRING(st.text, (qs.statement_start_offset/2)+1,
+      ((CASE qs.statement_end_offset
+        WHEN -1 THEN DATALENGTH(st.text)
+        ELSE qs.statement_end_offset
+      END - qs.statement_start_offset)/2) + 1) AS statement_text
+    ,*
+  FROM sys.dm_exec_query_stats AS qs
+  CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) AS st
+) t
+WHERE CAST(statement_text AS VARCHAR(MAX)) LIKE '%SELECT blah%' -- &lt;--Something to help you find the query
+ORDER BY [Avg CPU Time] DESC;
+
+--Modified(Expensive Proc With expensive statement in query cache plan)
+
+with cte as(
+SELECT top 25
+		SUBSTRING(st.text, (qs.statement_start_offset/2)+1,
+      ((CASE qs.statement_end_offset
+        WHEN -1 THEN DATALENGTH(st.text)
+        ELSE qs.statement_end_offset
+      END - qs.statement_start_offset)/2) + 1) AS statement_text,
+     (total_worker_time/execution_count )/1000000 AS [Avg CPU Time in Sec],
+	 execution_count,
+	total_worker_time,
+	last_worker_time,
+	min_worker_time,
+	max_worker_time,
+    creation_time AS cached_time,
+	text,
+	creation_time,
+	last_execution_time,
+	objectid
+  FROM sys.dm_exec_query_stats AS qs
+  CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) AS st
+  order by [Avg CPU Time in Sec] desc
+  )
+  select  OBJECT_NAME(ps.object_id) SPName, cte.* from cte join sys.dm_exec_procedure_stats ps on ps.object_id=cte.objectid 
+  order by [Avg CPU Time in Sec] desc

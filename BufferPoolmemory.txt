@@ -1,0 +1,8 @@
+To view Buffer Pool memory 
+
+SELECT
+	physical_memory_kb,
+	virtual_memory_kb,
+	committed_kb,
+	committed_target_kb
+FROM sys.dm_os_sys_info;

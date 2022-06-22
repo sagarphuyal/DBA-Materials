@@ -1,0 +1,48 @@
+<deadlock>
+ <victim-list>
+  <victimProcess id="process2abf6427468" />
+ </victim-list>
+ <process-list>
+  <process id="process2abf6427468" taskpriority="0" logused="10260" waitresource="OBJECT: 6:1000650908:0 " waittime="6979" ownerId="1311723032" transactionname="user_transaction" lasttranstarted="2021-10-29T14:41:45.383" XDES="0x2411b8ac428" lockMode="IX" schedulerid="1" kpid="9040" status="suspended" spid="69" sbid="0" ecid="0" priority="0" trancount="2" lastbatchstarted="2021-10-29T14:41:45.387" lastbatchcompleted="2021-10-29T14:41:45.383" lastattention="2021-10-29T14:38:44.990" clientapp=".Net SqlClient Data Provider" hostname="BITTIYA-APP-03" hostpid="6592" loginname="sa" isolationlevel="read committed (2)" xactid="1311723032" currentdb="6" currentdbname="INFINITY_025_001" lockTimeout="4294967295" clientoption1="673319008" clientoption2="128056">
+   <executionStack>
+    <frame procname="INFINITY_025_001.dbo.USP_CUSTOMER_MOVEMENT_TO_ACKNOWLEDGE" line="2039" stmtstart="247900" stmtend="249066" sqlhandle="0x03000600909f461849ef0c00a7ad000001000000000000000000000000000000000000000000000000000000">
+INSERT INTO INS_POLICY (BR_CODE, CUSTOMER_CODE, AC_GROUP_CODE, AC_NO, INS_COMP_ID, POLICY_NO, INS_START_DATE, INS_MONTH_PERIOD, INS_EXPIRY_DATE, INS_AMT, PREM_AMT, ORIG_BR_CODE, IS_TRANSFER, IS_TRANSFER_ACKG)
+		SELECT @BR_CODE BR_CODE, IP.CUSTOMER_CODE, IP.AC_GROUP_CODE, IP.AC_NO, IP.INS_COMP_ID, IP.POLICY_NO, IP.INS_START_DATE, IP.INS_MONTH_PERIOD, IP.INS_EXPIRY_DATE, IP.INS_AMT, IP.PREM_AMT, IP.ORIG_BR_CODE, 0,[IS_TRANSFER_ACKG]
+		FROM INS_POLICY AS IP 
+		WHERE IP.BR_CODE = @FROM_BR_CODE AND IP.CUSTOMER_CODE = @CUSTOMER_CODE AND IP.IS_TRANSFER = 1 AND IP.IS_TRANSFER_ACKG=    </frame>
+   </executionStack>
+   <inputbuf>
+Proc [Database Id = 6 Object Id = 407281552]   </inputbuf>
+  </process>
+  <process id="process24d647884e8" taskpriority="0" logused="1871256" waitresource="PAGE: 6:1:18772791 " waittime="3122" ownerId="1311292133" transactionname="user_transaction" lasttranstarted="2021-10-29T14:30:14.880" XDES="0x24ee6fd4428" lockMode="U" schedulerid="2" kpid="5352" status="suspended" spid="65" sbid="0" ecid="0" priority="0" trancount="2" lastbatchstarted="2021-10-29T14:30:14.883" lastbatchcompleted="2021-10-29T14:30:14.880" lastattention="2021-10-29T14:29:33.393" clientapp=".Net SqlClient Data Provider" hostname="BITTIYA-APP-03" hostpid="6592" loginname="sa" isolationlevel="read committed (2)" xactid="0" currentdb="6" currentdbname="INFINITY_025_001" lockTimeout="4294967295" clientoption1="673319008" clientoption2="128056">
+   <executionStack>
+    <frame procname="INFINITY_025_001.dbo.USP_CUSTOMER_MOVEMENT_TO_ACKNOWLEDGE" line="1894" stmtstart="223594" stmtend="224084" sqlhandle="0x03000600909f461849ef0c00a7ad000001000000000000000000000000000000000000000000000000000000">
+UPDATE DINHD
+		SET DINHD.NOM_AC_NO=ISNULL(NEW_AC_NO,'')
+		FROM DT_INT_NOMINEE_HIST_DETL DINHD
+			INNER JOIN #TEMP_CUST_BRANCH_TRAN_DETL AC ON AC.AC_GROUP_CODE=DINHD.NOM_AC_GROUP_CODE AND DINHD.NOM_AC_NO=AC.AC_NO
+		WHERE DINHD.BR_CODE=@BR_COD    </frame>
+   </executionStack>
+   <inputbuf>
+Proc [Database Id = 6 Object Id = 407281552]   </inputbuf>
+  </process>
+ </process-list>
+ <resource-list>
+  <objectlock lockPartition="0" objid="1000650908" subresource="FULL" dbid="6" objectname="INFINITY_025_001.dbo.INS_POLICY" id="lock2459cedb800" mode="X" associatedObjectId="1000650908">
+   <owner-list>
+    <owner id="process24d647884e8" mode="X" />
+   </owner-list>
+   <waiter-list>
+    <waiter id="process2abf6427468" mode="IX" requestType="wait" />
+   </waiter-list>
+  </objectlock>
+  <pagelock fileid="1" pageid="18772791" dbid="6" subresource="FULL" objectname="INFINITY_025_001.dbo.DT_INT_NOMINEE_HIST_DETL" id="lock27a792e3d80" mode="UIX" associatedObjectId="72057615513747456">
+   <owner-list>
+    <owner id="process2abf6427468" mode="UIX" />
+   </owner-list>
+   <waiter-list>
+    <waiter id="process24d647884e8" mode="U" requestType="wait" />
+   </waiter-list>
+  </pagelock>
+ </resource-list>
+</deadlock>

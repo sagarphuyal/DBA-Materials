@@ -1,0 +1,9 @@
+USE INFINITY_NEW
+go
+-- Drop Foreign Key Constraints Script 
+SELECT distinct 'ALTER TABLE ' 
++ '['+ Schema_name(FK.schema_id) 
++ '].['+ OBJECT_NAME(FK.parent_object_id) 
++ ']'+ ' DROP  CONSTRAINT ' 
++ '[' + FK.name + ']' AS DropConstraintQuery
+ FROM   sys.foreign_keys AS FK

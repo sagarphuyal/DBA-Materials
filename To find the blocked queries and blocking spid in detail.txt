@@ -1,0 +1,27 @@
+--To find the blocked queries and blocking spid in detail
+
+ 
+
+SELECT spid,
+       blocked as blockingProcessesId,
+       (SELECT Systxt1.TEXT
+        FROM   sysprocesses st
+               CROSS apply sys.Dm_exec_sql_text(sql_handle) systxt1
+        WHERE  spid = p.blocked) AS blockingQuerytxt,
+       PROGRAM_NAME,  loginame, DB_NAME(p.dbid) as DatabaseName,  
+        Systxt2.TEXT as Querytxt
+FROM   sysprocesses p
+       CROSS apply sys.Dm_exec_sql_text(sql_handle) Systxt2
+WHERE  blocked <> 0
+
+--Retrieve Actively Running T-SQL Statements from SQL Server
+
+SELECT
+   Req.session_id ,InBuf.event_info 
+FROM sys.dm_exec_requests AS Req
+JOIN sys.dm_exec_sessions AS Ses 
+   ON Ses.session_id = Req.session_id
+CROSS APPLY sys.dm_exec_input_buffer(Req.session_id, Req.request_id) AS InBuf
+WHERE
+    Ses.session_id>50 and Ses.is_user_process = 1
+GO

@@ -1,0 +1,11 @@
+--Most Used Tables
+https://social.msdn.microsoft.com/Forums/sqlserver/en-US/ee6cb272-042b-4640-8aed-27a9b92c4555/query-to-find-most-frequently-used-objects-tables-indexes-etc?forum=transactsql
+SELECT 
+	db_name(ius.database_id) AS DatabaseName,
+	t.NAME AS TableName,
+	SUM(ius.user_seeks + ius.user_scans + ius.user_lookups) AS NbrTimesAccessed
+FROM sys.dm_db_index_usage_stats ius
+INNER JOIN sys.tables t ON t.OBJECT_ID = ius.object_id
+WHERE database_id = DB_ID('INFINITY_220_001')
+GROUP BY database_id, t.name
+ORDER BY SUM(ius.user_seeks + ius.user_scans + ius.user_lookups) DESC

@@ -1,0 +1,45 @@
+<deadlock>
+ <victim-list>
+  <victimProcess id="process14ef114eca8" />
+ </victim-list>
+ <process-list>
+  <process id="process14ef114eca8" taskpriority="0" logused="248" waitresource="KEY: 24:72057612287213568 (8c8f593684d4)" waittime="2751" ownerId="329917823" transactionname="user_transaction" lasttranstarted="2021-09-26T16:33:10.790" XDES="0x163dc5b8428" lockMode="S" schedulerid="4" kpid="5084" status="suspended" spid="75" sbid="0" ecid="0" priority="0" trancount="1" lastbatchstarted="2021-09-26T16:33:10.790" lastbatchcompleted="2021-09-26T16:33:10.790" lastattention="1900-01-01T00:00:00.790" clientapp=".Net SqlClient Data Provider" hostname="BITTIYA-APP-03" hostpid="7904" loginname="sa" isolationlevel="read committed (2)" xactid="329917823" currentdb="24" currentdbname="INFINITY_315_001" lockTimeout="4294967295" clientoption1="671088672" clientoption2="128056">
+   <executionStack>
+    <frame procname="INFINITY_315_001.dbo.GetNewVchNo" line="18" stmtstart="1048" stmtend="1234" sqlhandle="0x03001800a2954863c7a9160098ad000000000000000000000000000000000000000000000000000000000000">
+SELECT @SERIAL_NO=S_VALUE FROM SEQ WHERE BR_CODE=@BR_CODE AND [KEY]=@KEY AND CHANGE_KEY=@FYEA    </frame>
+    <frame procname="INFINITY_315_001.dbo.S_GETNEWVCHNO" line="21" stmtstart="958" stmtend="1116" sqlhandle="0x03001800ad97b24100c3cb0089a5000001000000000000000000000000000000000000000000000000000000">
+SET @SERIAL_NO=(SELECT DBO.GETNEWVCHNO(@VCHTRANDATE,@TERMINAL_TYPE,@I,@BR_CODE)    </frame>
+   </executionStack>
+   <inputbuf>
+Proc [Database Id = 24 Object Id = 1102223277]   </inputbuf>
+  </process>
+  <process id="process15fe472a4e8" taskpriority="0" logused="248" waitresource="KEY: 24:72057612287213568 (b2a58dde0831)" waittime="2748" ownerId="329948975" transactionname="user_transaction" lasttranstarted="2021-09-26T16:33:35.450" XDES="0x16601ef4428" lockMode="S" schedulerid="3" kpid="7940" status="suspended" spid="51" sbid="0" ecid="0" priority="0" trancount="1" lastbatchstarted="2021-09-26T16:33:35.463" lastbatchcompleted="2021-09-26T16:33:35.457" lastattention="1900-01-01T00:00:00.457" clientapp=".Net SqlClient Data Provider" hostname="BITTIYA-APP-02" hostpid="5856" loginname="sa" isolationlevel="read committed (2)" xactid="329948975" currentdb="24" currentdbname="INFINITY_315_001" lockTimeout="4294967295" clientoption1="671088672" clientoption2="128056">
+   <executionStack>
+    <frame procname="INFINITY_315_001.dbo.GetNewVchNo" line="18" stmtstart="1048" stmtend="1234" sqlhandle="0x03001800a2954863c7a9160098ad000000000000000000000000000000000000000000000000000000000000">
+SELECT @SERIAL_NO=S_VALUE FROM SEQ WHERE BR_CODE=@BR_CODE AND [KEY]=@KEY AND CHANGE_KEY=@FYEA    </frame>
+    <frame procname="INFINITY_315_001.dbo.S_GETNEWVCHNO" line="21" stmtstart="958" stmtend="1116" sqlhandle="0x03001800ad97b24100c3cb0089a5000001000000000000000000000000000000000000000000000000000000">
+SET @SERIAL_NO=(SELECT DBO.GETNEWVCHNO(@VCHTRANDATE,@TERMINAL_TYPE,@I,@BR_CODE)    </frame>
+   </executionStack>
+   <inputbuf>
+Proc [Database Id = 24 Object Id = 1102223277]   </inputbuf>
+  </process>
+ </process-list>
+ <resource-list>
+  <keylock hobtid="72057612287213568" dbid="24" objectname="INFINITY_315_001.dbo.SEQ" indexname="PK_SEQ" id="lock14f278f4100" mode="X" associatedObjectId="72057612287213568">
+   <owner-list>
+    <owner id="process15fe472a4e8" mode="X" />
+   </owner-list>
+   <waiter-list>
+    <waiter id="process14ef114eca8" mode="S" requestType="wait" />
+   </waiter-list>
+  </keylock>
+  <keylock hobtid="72057612287213568" dbid="24" objectname="INFINITY_315_001.dbo.SEQ" indexname="PK_SEQ" id="lock15f941fe180" mode="X" associatedObjectId="72057612287213568">
+   <owner-list>
+    <owner id="process14ef114eca8" mode="X" />
+   </owner-list>
+   <waiter-list>
+    <waiter id="process15fe472a4e8" mode="S" requestType="wait" />
+   </waiter-list>
+  </keylock>
+ </resource-list>
+</deadlock>

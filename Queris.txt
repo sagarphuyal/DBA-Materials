@@ -1,0 +1,123 @@
+--Find Top 10 CPU Intensive Queries
+
+--1.Here is the query that gives TOP 10 queries that --are currently in cache that are consuming more CPU:
+
+;WITH eqs
+AS (
+    SELECT 
+         [execution_count]
+        ,[total_worker_time]/1000  AS [TotalCPUTime_ms]
+        ,[total_elapsed_time]/1000  AS [TotalDuration_ms]
+        ,query_hash
+        ,plan_handle
+        ,[sql_handle]
+    FROM sys.dm_exec_query_stats
+    )
+SELECT TOP 10 est.[text], eqp.query_plan AS SQLStatement
+    ,eqs.*
+FROM eqs
+OUTER APPLY sys.dm_exec_query_plan(eqs.plan_handle) eqp
+OUTER APPLY sys.dm_exec_sql_text(eqs.sql_handle) AS est
+ORDER BY [TotalCPUTime_ms] DESC
+
+--Modified
+;WITH eqs
+AS (
+    SELECT  TOP 10
+         [execution_count]
+        ,[total_worker_time]/1000  AS [TotalCPUTime_ms]
+        ,[total_elapsed_time]/1000  AS [TotalDuration_ms]
+        ,query_hash
+        ,plan_handle
+        ,[sql_handle]
+		,creation_time
+		,last_execution_time
+		
+    FROM sys.dm_exec_query_stats
+	ORDER BY [TotalCPUTime_ms] DESC
+    )
+SELECT  est.[text], eqp.query_plan AS SQLStatement
+    ,eqs.*
+FROM eqs
+OUTER APPLY sys.dm_exec_query_plan(eqs.plan_handle) eqp
+OUTER APPLY sys.dm_exec_sql_text(eqs.sql_handle) AS est
+
+
+You can further investigate the queries, that are having the same query_hash but different sql_handle values just to check whether optimizer can re-use the plans or not. Because, if the optimizer is not able to reuse the plans, then it has to generate new plans. Generating a new plan is a CPU intensive process. Here is a quick explanation about how to do the above-said analysis.
+
+2.Here is the query that helps us identify whether optimizer is reusing the plans or not:
+--url(https://sqlmaestros.com/script-how-to-identify-whether-optimizer-is-reusing-the-plans-or-not/)
+
+SELECT eqs.query_hash AS QueryHash
+    ,COUNT(DISTINCT sql_handle) AS CountOfSQLHandles
+    ,SUM(execution_count) AS NoOfExecutions  
+    ,SUM(eqs.total_logical_reads) AS TotalLogicalReads 
+    ,SUM(eqs.total_worker_time) AS TotalCPUTime 
+    ,SUM(eqs.total_elapsed_time) AS TotalDuration 
+    ,MAX(est.[TEXT]) AS OneSuchQuery 
+FROM sys.dm_exec_query_stats eqs
+CROSS APPLY sys.dm_exec_sql_text(eqs.sql_handle) est
+GROUP BY eqs.query_hash
+-- HAVING COUNT(DISTINCT sql_handle) > 2
+-- Adding HAVING clause will help us to concentrate frequently executing queries
+-- You can play with the number in the HAVING filter as per your requirement
+---We should start investigating the queries that have CountOfSQLHandles > 1.
+--If the ‘CountOfSQLHandles’ is 5, that means the plan cache contains 5 different sql_handle values with the same --query_hash value, which means they are effectively the same queries. ‘OneSuchQuery’ column gives us one of the queries --that have different sql_handle but same query_hash.
+
+3.Execute the following query to retrieve what we have in the query plan cache
+SELECT cp.usecounts, cp.cacheobjtype, cp.objtype, st.text, qp.query_plan
+FROM sys.dm_exec_cached_plans AS cp
+CROSS APPLY sys.dm_exec_sql_text(plan_handle) AS st
+CROSS APPLY sys.dm_exec_query_plan(plan_handle) AS qp
+ORDER BY cp.usecounts DESC
+
+
+
+
+------Modified-----
+;WITH eqs
+AS (
+    SELECT TOP 10
+	     SUBSTRING(est.text, (statement_start_offset/2)+1,
+      ((CASE statement_end_offset
+        WHEN -1 THEN DATALENGTH(est.text)
+        ELSE statement_end_offset
+      END - statement_start_offset)/2) + 1) AS statement_text,
+         [execution_count]
+        ,[total_worker_time]/1000  AS [TotalCPUTime_ms]
+        ,[total_elapsed_time]/1000  AS [TotalDuration_ms]
+        ,query_hash
+        ,plan_handle
+        ,[sql_handle]
+		,creation_time
+    FROM sys.dm_exec_query_stats eqs
+	OUTER APPLY sys.dm_exec_sql_text(eqs.sql_handle) AS est
+	ORDER BY [TotalCPUTime_ms] DESC
+    )
+SELECT  est.[text], eqp.query_plan AS SQLStatement
+    ,eqs.*
+FROM eqs
+OUTER APPLY sys.dm_exec_query_plan(eqs.plan_handle) eqp
+OUTER APPLY sys.dm_exec_sql_text(eqs.sql_handle) AS est
+ORDER BY [TotalCPUTime_ms] DESC
+
+----latest----
+SELECT TOP 25
+qs.total_worker_time/(qs.execution_count*60000000) as [Avg CPU Time in mins],
+qs.execution_count,
+qs.min_worker_time/60000000 as [Min CPU Time in mins],
+--qs.total_worker_time/qs.execution_count,
+total_elapsed_time/60000000 'AVG_elapsed_time_min',
+SUBSTRING(qt.text,qs.statement_start_offset/2,
+(case when qs.statement_end_offset = -1
+then len(convert(nvarchar(max), qt.text)) * 2
+else qs.statement_end_offset end -qs.statement_start_offset)/2)
+as query_text,
+dbname=db_name(qt.dbid),
+object_name(qt.objectid) as [Object name]
+,objectid
+FROM
+sys.dm_exec_query_stats qs cross apply
+sys.dm_exec_sql_text(qs.sql_handle) as qt
+ORDER BY
+[Avg CPU Time in mins] DESC
